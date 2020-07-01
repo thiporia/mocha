@@ -569,10 +569,6 @@ describe('Runner', function() {
       );
       done();
     });
-
-    afterEach(function() {
-      runner.dispose();
-    });
   });
 
   describe('.dispose', function() {

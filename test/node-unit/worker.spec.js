@@ -54,16 +54,20 @@ describe('worker', function() {
       };
 
       stubs.runHelpers = {
-        handleRequires: sinon.stub(),
-        validatePlugin: sinon.stub(),
-        loadRootHooks: sinon.stub().resolves()
+        handleRequires: sinon.stub().resolves({}),
+        validateLegacyPlugin: sinon.stub()
+      };
+
+      stubs.plugin = {
+        aggregateRootHooks: sinon.stub().resolves()
       };
 
       worker = rewiremock.proxy(WORKER_PATH, {
         workerpool: stubs.workerpool,
         '../../lib/mocha': stubs.Mocha,
         '../../lib/nodejs/serializer': stubs.serializer,
-        '../../lib/cli/run-helpers': stubs.runHelpers
+        '../../lib/cli/run-helpers': stubs.runHelpers,
+        '../../lib/plugin-loader': stubs.plugin
       });
     });
 
@@ -155,7 +159,7 @@ describe('worker', function() {
             await worker.run('some-file.js', serializeJavascript(argv));
 
             expect(
-              stubs.runHelpers.validatePlugin,
+              stubs.runHelpers.validateLegacyPlugin,
               'to have a call satisfying',
               [argv, 'ui', stubs.Mocha.interfaces]
             ).and('was called once');
@@ -204,7 +208,7 @@ describe('worker', function() {
 
               expect(stubs.runHelpers, 'to satisfy', {
                 handleRequires: expect.it('was called once'),
-                validatePlugin: expect.it('was called once')
+                validateLegacyPlugin: expect.it('was called once')
               });
             });
           });

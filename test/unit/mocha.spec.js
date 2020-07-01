@@ -722,7 +722,8 @@ describe('Mocha', function() {
             mocha.run();
           } catch (ignored) {
           } finally {
-            expect(runner.run, 'was called once');
+            // it'll be 0 or 1, depending on timing.
+            expect(runner.run.callCount, 'to be less than', 2);
           }
         });
       });
@@ -841,6 +842,87 @@ describe('Mocha', function() {
             'to throw',
             {code: 'ERR_MOCHA_UNSUPPORTED'}
           );
+        });
+      });
+    });
+
+    describe('_runGlobalFixtures()', function() {
+      it('should execute multiple fixtures in order', async function() {
+        const fixtures = [
+          sinon.stub().resolves('foo'),
+          sinon.stub().returns('bar')
+        ];
+        const context = await mocha._runGlobalFixtures(fixtures);
+
+        return expect(fixtures, 'to satisfy', [
+          expect.it('to have a call satisfying', {
+            thisValue: context,
+            returnValue: expect.it('to be fulfilled with', 'foo')
+          }),
+          expect.it('to have a call satisfying', {
+            thisValue: context,
+            returnValue: 'bar'
+          })
+        ]);
+      });
+    });
+
+    describe('runGlobalSetup()', function() {
+      let context;
+
+      beforeEach(function() {
+        sinon.stub(mocha, '_runGlobalFixtures').resolvesArg(1);
+        context = {};
+      });
+
+      describe('when a fixture is present', function() {
+        beforeEach(function() {
+          mocha.options.globalSetup = [sinon.spy()];
+        });
+
+        it('should call _runGlobalFixtures()', async function() {
+          await mocha.runGlobalSetup(context);
+          expect(mocha._runGlobalFixtures, 'to have a call satisfying', [
+            mocha.options.globalSetup,
+            context
+          ]);
+        });
+      });
+
+      describe('when a fixture is not present', function() {
+        it('should not call _runGlobalFixtures()', async function() {
+          await mocha.runGlobalSetup();
+          expect(mocha._runGlobalFixtures, 'was not called');
+        });
+      });
+    });
+
+    describe('runGlobalTeardown()', function() {
+      let context;
+
+      beforeEach(function() {
+        sinon.stub(mocha, '_runGlobalFixtures').resolvesArg(1);
+        context = {};
+      });
+
+      describe('when a fixture is present', function() {
+        beforeEach(function() {
+          mocha.options.globalTeardown = [sinon.spy()];
+        });
+
+        it('should call _runGlobalFixtures()', async function() {
+          await mocha.runGlobalTeardown();
+          expect(mocha._runGlobalFixtures, 'to have a call satisfying', [
+            mocha.options.globalTeardown,
+            context
+          ]);
+        });
+      });
+
+      describe('when a fixture is not present', function() {
+        it('should not call _runGlobalFixtures()', async function() {
+          await mocha.runGlobalTeardown();
+          expect(mocha._runGlobalFixtures, 'was not called');
         });
       });
     });
