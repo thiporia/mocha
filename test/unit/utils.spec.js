@@ -784,5 +784,11 @@ describe('lib/utils', function() {
         expect(utils.castArray('butts'), 'to equal', ['butts']);
       });
     });
+
+    describe('when provided null', function() {
+      it('should return an array containing a null value only', function() {
+        expect(utils.castArray(null), 'to equal', [null]);
+      });
+    });
   });
 });
