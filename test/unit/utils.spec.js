@@ -742,4 +742,47 @@ describe('lib/utils', function() {
       expect(utils.slug('poppies & fritz'), 'to be', 'poppies-fritz');
     });
   });
+
+  describe('castArray()', function() {
+    describe('when provided an array value', function() {
+      it('should return a copy of the array', function() {
+        const v = ['foo', 'bar', 'baz'];
+        expect(utils.castArray(v), 'to equal', ['foo', 'bar', 'baz']).and(
+          'not to be',
+          v
+        );
+      });
+    });
+
+    describe('when provided an "arguments" value', function() {
+      it('should return an array containing the arguments', function() {
+        (function() {
+          expect(utils.castArray(arguments), 'to equal', [
+            'foo',
+            'bar',
+            'baz'
+          ]).and('not to be', arguments);
+        })('foo', 'bar', 'baz');
+      });
+    });
+
+    describe('when provided an object', function() {
+      it('should return an array containing the object only', function() {
+        const v = {foo: 'bar'};
+        expect(utils.castArray(v), 'to equal', [v]);
+      });
+    });
+
+    describe('when provided no parameters', function() {
+      it('should return an empty array', function() {
+        expect(utils.castArray(), 'to equal', []);
+      });
+    });
+
+    describe('when provided a primitive value', function() {
+      it('should return an array containing the primitive value only', function() {
+        expect(utils.castArray('butts'), 'to equal', ['butts']);
+      });
+    });
+  });
 });
