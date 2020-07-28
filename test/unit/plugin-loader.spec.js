@@ -20,9 +20,21 @@ describe('plugin module', function() {
         it('should register the custom plugins', function() {
           const plugin = {exportName: 'mochaBananaPhone'};
           expect(
-            new PluginLoader([plugin]).registered.get('mochaBananaPhone'),
-            'to equal',
-            plugin
+            new PluginLoader({pluginDefs: [plugin]}).registered,
+            'to satisfy',
+            new Map([['mochaBananaPhone', plugin]])
+          );
+        });
+      });
+
+      describe('when passed ignored plugins', function() {
+        it('should retain a list of ignored plugins', function() {
+          expect(
+            new PluginLoader({
+              ignore: ['elephantInRoom']
+            }).ignoredExportNames,
+            'to contain',
+            'elephantInRoom'
           );
         });
       });
@@ -40,10 +52,12 @@ describe('plugin module', function() {
       let pluginLoader;
 
       beforeEach(function() {
-        pluginLoader = PluginLoader.create();
+        pluginLoader = PluginLoader.create({
+          ignore: ['elephantInRoom']
+        });
       });
 
-      describe('register', function() {
+      describe('register()', function() {
         describe('when the plugin export name is not in use', function() {
           it('should not throw', function() {
             expect(
@@ -61,6 +75,27 @@ describe('plugin module', function() {
               code: INVALID_PLUGIN_DEFINITION,
               pluginDef
             });
+          });
+        });
+
+        describe('when the plugin export name is ignored', function() {
+          let pluginDef;
+
+          beforeEach(function() {
+            pluginDef = {exportName: 'elephantInRoom'};
+          });
+
+          it('should not throw', function() {
+            expect(() => pluginLoader.register(pluginDef), 'not to throw');
+          });
+
+          it('should not register the plugin', function() {
+            pluginLoader.register(pluginDef);
+            expect(
+              pluginLoader.registered,
+              'not to have key',
+              'elephantInRoom'
+            );
           });
         });
 
@@ -124,7 +159,7 @@ describe('plugin module', function() {
               exportName: 'mochaBananaPhone',
               validate: sinon.spy()
             };
-            pluginLoader = PluginLoader.create([plugin]);
+            pluginLoader = PluginLoader.create({pluginDefs: [plugin]});
           });
 
           it('should return true', function() {
@@ -135,9 +170,11 @@ describe('plugin module', function() {
           it('should retain the value of any matching property in its mapping', function() {
             const func = () => {};
             pluginLoader.load({mochaBananaPhone: func});
-            expect(pluginLoader.loaded.get('mochaBananaPhone'), 'to equal', [
-              func
-            ]);
+            expect(
+              pluginLoader.loaded,
+              'to satisfy',
+              new Map([['mochaBananaPhone', [func]]])
+            );
           });
 
           it('should call the associated validator, if present', function() {
@@ -163,7 +200,9 @@ describe('plugin module', function() {
             exportName: 'bar',
             validate: sinon.stub()
           };
-          pluginLoader = PluginLoader.create([fooPlugin, barPlugin]);
+          pluginLoader = PluginLoader.create({
+            pluginDefs: [fooPlugin, barPlugin]
+          });
         });
 
         describe('when passed a falsy or non-object value', function() {
@@ -222,11 +261,19 @@ describe('plugin module', function() {
               });
 
               it('should add the implementation to the internal mapping', function() {
-                expect(pluginLoader.loaded.get('foo'), 'to have length', 1);
+                expect(
+                  pluginLoader.loaded,
+                  'to satisfy',
+                  new Map([['foo', expect.it('to have length', 1)]])
+                );
               });
 
               it('should not add an implementation of plugins not present', function() {
-                expect(pluginLoader.loaded.get('bar'), 'to be empty');
+                expect(
+                  pluginLoader.loaded,
+                  'to satisfy',
+                  new Map([['bar', expect.it('to be empty')]])
+                );
               });
             });
 
@@ -261,7 +308,9 @@ describe('plugin module', function() {
           bazPlugin = {
             exportName: 'baz'
           };
-          pluginLoader = PluginLoader.create([fooPlugin, barPlugin, bazPlugin]);
+          pluginLoader = PluginLoader.create({
+            pluginDefs: [fooPlugin, barPlugin, bazPlugin]
+          });
         });
 
         describe('when no plugins have been loaded', function() {

@@ -146,6 +146,8 @@
     "touch": "^3.1.0",
     "unexpected": "^11.14.0",
     "unexpected-eventemitter": "^2.2.0",
+    "unexpected-map": "^2.0.0",
+    "unexpected-set": "^2.0.1",
     "unexpected-sinon": "^10.11.2",
     "uslug": "^1.0.4",
     "uuid": "^8.0.0"

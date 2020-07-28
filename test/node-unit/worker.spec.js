@@ -150,7 +150,10 @@ describe('worker', function() {
             expect(
               stubs.runHelpers.handleRequires,
               'to have a call satisfying',
-              ['foo']
+              [
+                'foo',
+                {ignoredPlugins: ['mochaGlobalSetup', 'mochaGlobalTeardown']}
+              ]
             ).and('was called once');
           });
 
