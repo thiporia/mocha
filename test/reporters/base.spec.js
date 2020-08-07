@@ -443,4 +443,14 @@ describe('Base reporter', function() {
       sinon.restore();
     });
   });
+
+  describe('when the same stack trace exists in the stack and the message', function() {
+    var msg = 'An error occured with following trace: \n Error';
+    var stack = 'Error: An error occured with following trace: \n\n Error';
+
+    it('If duplicates are checked, it should return true', function() {
+      var expected = true;
+      assert.equal(Base.isDuplicateStackAndMsg(stack, msg), expected);
+    });
+  });
 });
